@@ -1,34 +1,45 @@
-const API_BASE_URL = 'https://timeout-appeals.discloud.app/api';
-const API_KEY = 'P16yie33Q2110pE-5bMAahtL2CmpK6Q-:Abc123!XyZ987@';
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const app = express();
 
-async function sendAPI(endpoint, method = 'GET', body = null) {
-    try {
-        const url = `${API_BASE_URL}${endpoint}`;
-        console.log('📤 جاري الاتصال بـ:', url);
+// ✅ السماح الكامل من أي مكان لحل مشكلة CORS
+app.use(cors({ origin: '*', credentials: true }));
+app.use(express.json());
 
-        const options = {
-            method: method,
-            mode: 'cors', // ✅ مهم جداًً
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': API_KEY
-            }
-        };
+// ✅ مسار فحص حالة البوت
+app.get('/api/status', (req, res) => {
+    res.json({ 
+        online: true, 
+        timestamp: new Date().toISOString(),
+        message: '✅ البوت شغال ويتصل بنجاح!'
+    });
+});
 
-        if (body) options.body = JSON.stringify(body);
-
-        const res = await fetch(url, options);
-        
-        console.log('📥 رد الخادم:', res.status);
-        
-        if (!res.ok) throw new Error(`خطأ: ${res.status}`);
-        const data = await res.json();
-        console.log('📥 البيانات:', data);
-        return data;
-
-    } catch (err) {
-        console.error('❌ خطأ:', err);
-        alert(`تعذر الاتصال!\n\nالسبب: ${err.message}\n\n⚠️ تأكد:\n✅ البوت شغال في Discloud\n✅ أضفت إعدادات CORS في server.js\n✅ انتظرت دقيقتين بعد إعادة التشغيل`);
-        return null;
+// ✅ مسار التحقق من الصلاحيات
+app.get('/api/auth-check', (req, res) => {
+    const key = req.headers['x-api-key'];
+    
+    // تحقق من كلمة السر
+    if (key !== process.env.API_SECRET) {
+        return res.json({ 
+            success: false, 
+            message: '❌ كلمة السر غير متطابقة' 
+        });
     }
-}
+
+    // ✅ الدخول ناجح — صلاحيات المدير
+    res.json({ 
+        success: true, 
+        isStaff: true,
+        isAdmin: true,
+        message: '✅ تم التحقق بنجاح — أهلاً بك يا مدير!'
+    });
+});
+
+// ✅ تشغيل الخادم على المنفذ الصحيح لـ Discloud
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+    console.log(`🌐 خادم الربط شغال على المنفذ ${PORT}`);
+    console.log(`✅ النظام جاهز لاستقبال الطلبات!`);
+});
