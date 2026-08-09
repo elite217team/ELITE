@@ -6,11 +6,12 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui; }
         body { background: #1a1a2e; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; }
-        .box { background: #16213e; padding: 40px; border-radius: 12px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .box { background: #16213e; padding: 40px; border-radius: 12px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3); max-width: 400px; width: 90%; }
         .spinner { width: 40px; height: 40px; border: 3px solid #0f3460; border-top-color: #00d4ff; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .success { color: #00ff88; }
         .error { color: #ff4444; }
+        button { margin-top: 20px; padding: 10px 20px; background: #00d4ff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -18,18 +19,25 @@
         <h2 id="status">جاري التحقق من الصلاحيات...</h2>
         <div class="spinner" id="loader"></div>
         <p id="message" style="margin-top:15px; color:#aaa;"></p>
+        <button id="retry" style="display:none;" onclick="location.reload()">إعادة المحاولة</button>
     </div>
 
     <script src="api.js"></script>
     <script>
         async function checkAuth() {
             try {
-                // طلب التحقق من البوت
-                const res = await sendAPI('/auth-check', 'GET');
+                // أولاً: نتحقق أن البوت شغال
+                const status = await sendAPI('/status');
+                if (!status || !status.online) {
+                    throw new Error('البوت غير متصل');
+                }
+
+                // ثانياً: طلب التحقق
+                const res = await sendAPI('/auth-check');
                 
                 document.getElementById('loader').style.display = 'none';
 
-                if (res && res.success && res.isStaff) {
+                if (res && res.success) {
                     document.getElementById('status').textContent = '✅ تم التحقق بنجاح!';
                     document.getElementById('status').className = 'success';
                     document.getElementById('message').textContent = 'جاري توجيهك للوحة التحكم...';
@@ -39,67 +47,15 @@
                 } else {
                     document.getElementById('status').textContent = '❌ غير مصرح لك بالدخول';
                     document.getElementById('status').className = 'error';
-                    document.getElementById('message').textContent = 'يجب أن تكون من الموظفين أو الإدارة';
+                    document.getElementById('message').textContent = res?.message || 'تحقق من صلاحياتك في السيرفر';
+                    document.getElementById('retry').style.display = 'block';
                 }
             } catch (err) {
                 document.getElementById('loader').style.display = 'none';
-                document.getElementById('status').textContent = '⚠️ خطأ في الاتصال';
+                document.getElementById('status').textContent = '⚠️ تعذر الاتصال';
                 document.getElementById('status').className = 'error';
-                document.getElementById('message').textContent = 'البوت غير متصل أو رابطه غير صحيح';
-            }
-        }
-
-        checkAuth();
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-    <meta charset="UTF-8">
-    <title>جاري التحقق...</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui; }
-        body { background: #1a1a2e; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; }
-        .box { background: #16213e; padding: 40px; border-radius: 12px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        .spinner { width: 40px; height: 40px; border: 3px solid #0f3460; border-top-color: #00d4ff; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .success { color: #00ff88; }
-        .error { color: #ff4444; }
-    </style>
-</head>
-<body>
-    <div class="box">
-        <h2 id="status">جاري التحقق من الصلاحيات...</h2>
-        <div class="spinner" id="loader"></div>
-        <p id="message" style="margin-top:15px; color:#aaa;"></p>
-    </div>
-
-    <script src="api.js"></script>
-    <script>
-        async function checkAuth() {
-            try {
-                // طلب التحقق من البوت
-                const res = await sendAPI('/auth-check', 'GET');
-                
-                document.getElementById('loader').style.display = 'none';
-
-                if (res && res.success && res.isStaff) {
-                    document.getElementById('status').textContent = '✅ تم التحقق بنجاح!';
-                    document.getElementById('status').className = 'success';
-                    document.getElementById('message').textContent = 'جاري توجيهك للوحة التحكم...';
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 1500);
-                } else {
-                    document.getElementById('status').textContent = '❌ غير مصرح لك بالدخول';
-                    document.getElementById('status').className = 'error';
-                    document.getElementById('message').textContent = 'يجب أن تكون من الموظفين أو الإدارة';
-                }
-            } catch (err) {
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('status').textContent = '⚠️ خطأ في الاتصال';
-                document.getElementById('status').className = 'error';
-                document.getElementById('message').textContent = 'البوت غير متصل أو رابطه غير صحيح';
+                document.getElementById('message').textContent = 'السبب: البوت قد يكون متوقف أو الرابط خطأ\n\n' + (err?.message || '');
+                document.getElementById('retry').style.display = 'block';
             }
         }
 
