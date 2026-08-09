@@ -2,7 +2,7 @@
 const API_BASE_URL = 'https://timeout-appeals.discloud.app/api';
 
 // ─── كلمة السر (نفسها في ملف .env في البوت) ───────
-const API_KEY = 'P16yie33Q2110pE-5bMAahtL2CmpK6Q-Abc123!XyZ987@';
+const API_KEY = 'P16yie33Q2110pE-5bMAahtL2CmpK6Q';
 
 // ─── دالة إرسال الطلبات للبوت ───────────────────────
 async function sendAPI(endpoint, method = 'GET', body = null) {
