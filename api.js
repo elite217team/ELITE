@@ -1,5 +1,5 @@
 // ─── رابط البوت على Discloud ───────────────────────
-const API_BASE_URL = 'https://timeout-appeals.discloud.app/api/status'
+const API_BASE_URL = 'https://timeout-appeals.discloud.app/api'
 
 // ─── كلمة السر (نفسها في ملف .env في البوت) ───────
 const API_KEY = 'P16yie33Q2110pE-5bMAahtL2CmpK6Q'
