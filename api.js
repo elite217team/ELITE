@@ -1,53 +1,34 @@
-// ─── رابط البوت على Discloud ───────────────────────
-const API_BASE_URL = 'https://timeout-appeals.discloud.app/api'
+const API_BASE_URL = 'https://timeout-appeals.discloud.app/api';
+const API_KEY = 'P16yie33Q2110pE-5bMAahtL2CmpK6Q-:Abc123!XyZ987@';
 
-// ─── كلمة السر (نفسها في ملف .env في البوت) ───────
-const API_KEY = 'P16yie33Q2110pE-5bMAahtL2CmpK6Q'
-
-// ─── دالة إرسال الطلبات للبوت ───────────────────────
 async function sendAPI(endpoint, method = 'GET', body = null) {
     try {
+        const url = `${API_BASE_URL}${endpoint}`;
+        console.log('📤 جاري الاتصال بـ:', url);
+
         const options = {
             method: method,
+            mode: 'cors', // ✅ مهم جداًً
             headers: {
                 'Content-Type': 'application/json',
                 'x-api-key': API_KEY
             }
         };
 
-        if (body) {
-            options.body = JSON.stringify(body);
-        }
+        if (body) options.body = JSON.stringify(body);
 
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-
-        if (!response.ok) {
-            throw new Error(`خطأ في الرابط: ${response.status}`);
-        }
-
-        const data = await response.json();
+        const res = await fetch(url, options);
+        
+        console.log('📥 رد الخادم:', res.status);
+        
+        if (!res.ok) throw new Error(`خطأ: ${res.status}`);
+        const data = await res.json();
+        console.log('📥 البيانات:', data);
         return data;
 
-    } catch (error) {
-        console.error('❌ خطأ في الاتصال:', error);
-        alert(`تعذر الاتصال بالبوت!\n\nالسبب: ${error.message}\n\nتأكد من:\n✅ البوت شغال في Discloud\n✅ الرابط صحيح\n✅ كلمة السر متطابقة`);
+    } catch (err) {
+        console.error('❌ خطأ:', err);
+        alert(`تعذر الاتصال!\n\nالسبب: ${err.message}\n\n⚠️ تأكد:\n✅ البوت شغال في Discloud\n✅ أضفت إعدادات CORS في server.js\n✅ انتظرت دقيقتين بعد إعادة التشغيل`);
         return null;
     }
-}
-
-// ─── دوال مساعدة ──────────────────────────────────────
-async function checkBotStatus() {
-    return await sendAPI('/status');
-}
-
-async function checkAuth() {
-    return await sendAPI('/auth-check');
-}
-
-async function loadSettings() {
-    return await sendAPI('/settings');
-}
-
-async function saveSettings(newSettings) {
-    return await sendAPI('/update-settings', 'POST', newSettings);
 }
