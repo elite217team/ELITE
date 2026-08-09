@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إعدادات البوت</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>إدارة التذاكر</h2>
+            </div>
+            <nav class="sidebar-nav">
+<nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link">لوحة التحكم</a>
+    <a href="statistics.html" class="nav-link">الإحصائيات والتقارير</a>
+    <a href="tickets.html" class="nav-link">التذاكر</a>
+    <a href="archive.html" class="nav-link">أرشيف التذاكر</a>
+    <a href="ticket-types.html" class="nav-link">أنواع التذاكر</a>
+    <a href="ticket-buttons.html" class="nav-link">أزرار التذاكر</a>
+    <a href="ticket-settings.html" class="nav-link">إعدادات التذاكر</a>
+    <a href="staff-list.html" class="nav-link">أعضاء الإدارة</a>
+    <a href="staff.html" class="nav-link">إدارة الرتب</a>
+    <a href="permissions.html" class="nav-link">إدارة الصلاحيات المتقدمة</a>
+    <a href="banned.html" class="nav-link">المحظورين والقائمة السوداء</a>
+    <a href="message-templates.html" class="nav-link">قوالب الرسائل</a>
+    <a href="points.html" class="nav-link">نظام النقاط</a>
+    <a href="logs.html" class="nav-link">سجلات النظام</a>
+    <a href="bot-settings.html" class="nav-link">إعدادات البوت</a>
+    <a href="settings.html" class="nav-link">إعدادات الموقع</a>
+    <a href="profile.html" class="nav-link">الملف الشخصي</a>
+    <a href="/logout" class="nav-link logout">تسجيل الخروج</a>
+</nav>
+</nav>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <header class="content-header">
+                <h1>إعدادات البوت والربط مع Discord</h1>
+            </header>
+
+            <div class="card">
+                <h2>حالة الاتصال</h2>
+                <div style="display:flex;align-items:center;gap:10px;margin:15px 0;">
+                    <div id="botStatusIndicator" style="width:12px;height:12px;border-radius:50%;background:var(--danger);"></div>
+                    <span id="botStatusText">غير متصل</span>
+                </div>
+                <button class="btn btn-primary" onclick="restartBot()">إعادة تشغيل البوت</button>
+            </div>
+
+            <div class="card">
+                <h2>إعدادات السيرفر الأساسية</h2>
+                <form id="botSettingsForm">
+                    <div class="form-group">
+                        <label>معرف السيرفر (Guild ID)</label>
+                        <input type="text" id="guildId" required>
+                    </div>
+                    <div class="form-group">
+                        <label>معرف قناة السجلات</label>
+                        <input type="text" id="logsChannelId">
+                    </div>
+                    <div class="form-group">
+                        <label>معرف الرتبة المدير العام</label>
+                        <input type="text" id="adminRoleId">
+                    </div>
+                    <div class="form-group">
+                        <label>رسالة الترحيب عند فتح التذكرة</label>
+                        <textarea id="welcomeMessage" rows="3" placeholder="مرحباً بك، شكراً لفتح تذكرة الدعم..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>إغلاق تلقائي بعد عدد ساعات من عدم النشاط</label>
+                        <input type="number" id="autoCloseHours" value="0" placeholder="0 = تعطيل">
+                    </div>
+                    <div class="form-group">
+                        <label>خيارات</label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" id="requireClaim">
+                            منع المراسلة حتى يتم استلام التذكرة من موظف
+                        </label>
+                    </div>
+                    <button type="submit" class="btn discord-btn">حفظ الإعدادات</button>
+                </form>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        async function loadSettings() {
+            const data = await apiRequest('/bot/settings');
+            if (data) {
+                document.getElementById('guildId').value = data.guildId || '';
+                document.getElementById('logsChannelId').value = data.logsChannelId || '';
+                document.getElementById('adminRoleId').value = data.adminRoleId || '';
+                document.getElementById('welcomeMessage').value = data.welcomeMessage || '';
+                document.getElementById('autoCloseHours').value = data.autoCloseHours || 0;
+                document.getElementById('requireClaim').checked = data.requireClaim || false;
+
+                const status = await apiRequest('/bot/status');
+                if (status && status.online) {
+                    document.getElementById('botStatusIndicator').style.background = 'var(--success)';
+                    document.getElementById('botStatusText').textContent = 'متصل ويعمل';
+                }
+            }
+        }
+
+        async function restartBot() {
+            if (!confirm('إعادة تشغيل البوت؟ سينقطع الاتصال للحظات.')) return;
+            await apiRequest('/bot/restart', 'POST');
+            alert('جاري إعادة التشغيل...');
+            setTimeout(loadSettings, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            document.getElementById('botSettingsForm').addEventListener('submit', async e => {
+                e.preventDefault();
+                await apiRequest('/bot/settings', 'POST', {
+                    guildId: document.getElementById('guildId').value,
+                    logsChannelId: document.getElementById('logsChannelId').value,
+                    adminRoleId: document.getElementById('adminRoleId').value,
+                    welcomeMessage: document.getElementById('welcomeMessage').value,
+                    autoCloseHours: parseInt(document.getElementById('autoCloseHours').value),
+                    requireClaim: document.getElementById('requireClaim').checked
+                });
+                alert('تم حفظ إعدادات البوت');
+            });
+        });
+    </script>
+</body>
+</html>

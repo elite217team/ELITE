@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة التذاكر</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>إدارة التذاكر</h2>
+            </div>
+            <nav class="sidebar-nav">
+<nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link">لوحة التحكم</a>
+    <a href="statistics.html" class="nav-link">الإحصائيات والتقارير</a>
+    <a href="tickets.html" class="nav-link">التذاكر</a>
+    <a href="archive.html" class="nav-link">أرشيف التذاكر</a>
+    <a href="ticket-types.html" class="nav-link">أنواع التذاكر</a>
+    <a href="ticket-buttons.html" class="nav-link">أزرار التذاكر</a>
+    <a href="ticket-settings.html" class="nav-link">إعدادات التذاكر</a>
+    <a href="staff-list.html" class="nav-link">أعضاء الإدارة</a>
+    <a href="staff.html" class="nav-link">إدارة الرتب</a>
+    <a href="permissions.html" class="nav-link">إدارة الصلاحيات المتقدمة</a>
+    <a href="banned.html" class="nav-link">المحظورين والقائمة السوداء</a>
+    <a href="message-templates.html" class="nav-link">قوالب الرسائل</a>
+    <a href="points.html" class="nav-link">نظام النقاط</a>
+    <a href="logs.html" class="nav-link">سجلات النظام</a>
+    <a href="bot-settings.html" class="nav-link">إعدادات البوت</a>
+    <a href="settings.html" class="nav-link">إعدادات الموقع</a>
+    <a href="profile.html" class="nav-link">الملف الشخصي</a>
+    <a href="/logout" class="nav-link logout">تسجيل الخروج</a>
+</nav>
+</nav>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <header class="content-header">
+                <h1>إدارة التذاكر</h1>
+                <div class="filters">
+                    <select id="statusFilter">
+                        <option value="all">جميع الحالات</option>
+                        <option value="open">مفتوحة</option>
+                        <option value="claimed">مستلمة</option>
+                        <option value="closed">مغلقة</option>
+                    </select>
+                    <input type="text" id="searchInput" placeholder="بحث برقم التذكرة أو اسم صاحبها...">
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الرقم</th>
+                                <th>النوع</th>
+                                <th>صاحب التذكرة</th>
+                                <th>الموظف</th>
+                                <th>الحالة</th>
+                                <th>التاريخ</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ticketsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        async function loadTickets() {
+            const status = document.getElementById('statusFilter').value;
+            const search = document.getElementById('searchInput').value;
+            const data = await apiRequest(`/tickets/list?status=${status}&search=${encodeURIComponent(search)}`);
+            const tbody = document.getElementById('ticketsTable');
+            tbody.innerHTML = '';
+
+            if (!data || !data.tickets) return;
+            data.tickets.forEach(ticket => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>#${ticket.ticketNumber}</td>
+                    <td>${ticket.typeName || '-'}</td>
+                    <td>${ticket.ownerName || ticket.ownerDiscordId}</td>
+                    <td>${ticket.claimedByName || 'غير مستلمة'}</td>
+                    <td>${getStatusBadge(ticket.status)}</td>
+                    <td>${new Date(ticket.createdAt).toLocaleDateString('ar-SA')}</td>
+                    <td>
+                        ${ticket.status === 'open' ? `<button class="btn btn-sm btn-primary" onclick="claimTicket('${ticket.id}')">استلام</button>` : ''}
+                        ${ticket.status !== 'closed' ? `<button class="btn btn-sm btn-danger" onclick="closeTicket('${ticket.id}')">إغلاق</button>` : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function claimTicket(id) {
+            if (!confirm('تأكيد استلام التذكرة؟')) return;
+            await apiRequest(`/tickets/${id}/claim`, 'POST');
+            loadTickets();
+        }
+
+        async function closeTicket(id) {
+            if (!confirm('تأكيد إغلاق التذكرة؟')) return;
+            await apiRequest(`/tickets/${id}/close`, 'POST');
+            loadTickets();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTickets();
+            document.getElementById('statusFilter').addEventListener('change', loadTickets);
+            document.getElementById('searchInput').addEventListener('input', loadTickets);
+        });
+    </script>
+</body>
+</html>

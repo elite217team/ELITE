@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أنواع التذاكر</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>إدارة التذاكر</h2>
+            </div>
+            <nav class="sidebar-nav">
+<nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link">لوحة التحكم</a>
+    <a href="statistics.html" class="nav-link">الإحصائيات والتقارير</a>
+    <a href="tickets.html" class="nav-link">التذاكر</a>
+    <a href="archive.html" class="nav-link">أرشيف التذاكر</a>
+    <a href="ticket-types.html" class="nav-link">أنواع التذاكر</a>
+    <a href="ticket-buttons.html" class="nav-link">أزرار التذاكر</a>
+    <a href="ticket-settings.html" class="nav-link">إعدادات التذاكر</a>
+    <a href="staff-list.html" class="nav-link">أعضاء الإدارة</a>
+    <a href="staff.html" class="nav-link">إدارة الرتب</a>
+    <a href="permissions.html" class="nav-link">إدارة الصلاحيات المتقدمة</a>
+    <a href="banned.html" class="nav-link">المحظورين والقائمة السوداء</a>
+    <a href="message-templates.html" class="nav-link">قوالب الرسائل</a>
+    <a href="points.html" class="nav-link">نظام النقاط</a>
+    <a href="logs.html" class="nav-link">سجلات النظام</a>
+    <a href="bot-settings.html" class="nav-link">إعدادات البوت</a>
+    <a href="settings.html" class="nav-link">إعدادات الموقع</a>
+    <a href="profile.html" class="nav-link">الملف الشخصي</a>
+    <a href="/logout" class="nav-link logout">تسجيل الخروج</a>
+</nav>
+</nav>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <header class="content-header">
+                <h1>أنواع التذاكر</h1>
+                <button class="btn btn-primary" onclick="showForm()">نوع جديد</button>
+            </header>
+
+            <div class="card" id="formCard" style="display:none;">
+                <h2 id="formTitle">إضافة نوع تذكرة</h2>
+                <form id="typeForm">
+                    <input type="hidden" id="typeId">
+                    <div class="form-group">
+                        <label>اسم النوع</label>
+                        <input type="text" id="typeName" required placeholder="مثال: دعم فني - اقتراح - شكوى">
+                    </div>
+                    <div class="form-group">
+                        <label>الوصف</label>
+                        <textarea id="typeDesc" rows="2" placeholder="وصف يظهر عند فتح التذكرة"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>معرف مجلد التذاكر في Discord</label>
+                        <input type="text" id="typeCategoryId" required placeholder="معرف الكاتيجوري">
+                    </div>
+                    <div class="form-group">
+                        <label>معرف الرتبة المسؤولة</label>
+                        <input type="text" id="typeAdminRoleId" required placeholder="معرف الرتبة التي تستلم التذاكر">
+                    </div>
+                    <div class="form-group">
+                        <label>نقاط الاستلام</label>
+                        <input type="number" id="typePointsClaim" value="5">
+                    </div>
+                    <div class="form-group">
+                        <label>نقاط الإغلاق</label>
+                        <input type="number" id="typePointsClose" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label>اللون (كود HEX)</label>
+                        <input type="text" id="typeColor" value="#5865F2">
+                    </div>
+                    <div class="form-group">
+                        <label>حالة التفعيل</label>
+                        <select id="typeActive">
+                            <option value="true" selected>مفعل</option>
+                            <option value="false">معطل</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button type="submit" class="btn discord-btn">حفظ</button>
+                        <button type="button" class="btn btn-danger" onclick="hideForm()">إلغاء</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>الأنواع المضافة</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الاسم</th>
+                                <th>المجلد</th>
+                                <th>الرتبة المسؤولة</th>
+                                <th>نقاط</th>
+                                <th>الحالة</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="typesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        let editingId = null;
+
+        function showForm(item = null) {
+            document.getElementById('formCard').style.display = 'block';
+            document.getElementById('formTitle').textContent = item ? 'تعديل النوع' : 'إضافة نوع تذكرة';
+            editingId = item ? item.id : null;
+            if (item) {
+                document.getElementById('typeId').value = item.id;
+                document.getElementById('typeName').value = item.name;
+                document.getElementById('typeDesc').value = item.description || '';
+                document.getElementById('typeCategoryId').value = item.categoryId;
+                document.getElementById('typeAdminRoleId').value = item.adminRoleId;
+                document.getElementById('typePointsClaim').value = item.pointsClaim || 5;
+                document.getElementById('typePointsClose').value = item.pointsClose || 10;
+                document.getElementById('typeColor').value = item.color || '#5865F2';
+                document.getElementById('typeActive').value = item.isActive ? 'true' : 'false';
+            } else {
+                document.getElementById('typeForm').reset();
+            }
+        }
+
+        function hideForm() {
+            document.getElementById('formCard').style.display = 'none';
+            editingId = null;
+        }
+
+        async function loadTypes() {
+            const data = await apiRequest('/ticket-types/list');
+            const tbody = document.getElementById('typesTable');
+            tbody.innerHTML = '';
+            if (!data || !data.types) return;
+            data.types.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${t.name}</strong>${t.description ? `<br><small style="color:#999">${t.description}</small>` : ''}</td>
+                    <td>${t.categoryId}</td>
+                    <td>${t.adminRoleId}</td>
+                    <td>استلام: ${t.pointsClaim || 5} ⭐ إغلاق: ${t.pointsClose || 10} ⭐</td>
+                    <td>${t.isActive ? '<span class="badge open">مفعل</span>' : '<span class="badge closed">معطل</span>'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick='editItem(${JSON.stringify(t).replace(/'/g,"\\'")})'>تعديل</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteType('${t.id}')">حذف</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function editItem(item) {
+            showForm(item);
+        }
+
+        async function deleteType(id) {
+            if (!confirm('تأكيد الحذف؟ سيؤثر على إعدادات البوت لهذا النوع.')) return;
+            await apiRequest(`/ticket-types/${id}`, 'DELETE');
+            loadTypes();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTypes();
+            document.getElementById('typeForm').addEventListener('submit', async e => {
+                e.preventDefault();
+                const payload = {
+                    name: document.getElementById('typeName').value,
+                    description: document.getElementById('typeDesc').value,
+                    categoryId: document.getElementById('typeCategoryId').value,
+                    adminRoleId: document.getElementById('typeAdminRoleId').value,
+                    pointsClaim: parseInt(document.getElementById('typePointsClaim').value),
+                    pointsClose: parseInt(document.getElementById('typePointsClose').value),
+                    color: document.getElementById('typeColor').value,
+                    isActive: document.getElementById('typeActive').value === 'true'
+                };
+                if (editingId) {
+                    await apiRequest(`/ticket-types/${editingId}`, 'PUT', payload);
+                } else {
+                    await apiRequest('/ticket-types', 'POST', payload);
+                }
+                hideForm();
+                loadTypes();
+            });
+        });
+    </script>
+</body>
+</html>

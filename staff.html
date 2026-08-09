@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الموظفين والرتب</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>إدارة التذاكر</h2>
+            </div>
+            <nav class="sidebar-nav">
+<nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link">لوحة التحكم</a>
+    <a href="statistics.html" class="nav-link">الإحصائيات والتقارير</a>
+    <a href="tickets.html" class="nav-link">التذاكر</a>
+    <a href="archive.html" class="nav-link">أرشيف التذاكر</a>
+    <a href="ticket-types.html" class="nav-link">أنواع التذاكر</a>
+    <a href="ticket-buttons.html" class="nav-link">أزرار التذاكر</a>
+    <a href="ticket-settings.html" class="nav-link">إعدادات التذاكر</a>
+    <a href="staff-list.html" class="nav-link">أعضاء الإدارة</a>
+    <a href="staff.html" class="nav-link">إدارة الرتب</a>
+    <a href="permissions.html" class="nav-link">إدارة الصلاحيات المتقدمة</a>
+    <a href="banned.html" class="nav-link">المحظورين والقائمة السوداء</a>
+    <a href="message-templates.html" class="nav-link">قوالب الرسائل</a>
+    <a href="points.html" class="nav-link">نظام النقاط</a>
+    <a href="logs.html" class="nav-link">سجلات النظام</a>
+    <a href="bot-settings.html" class="nav-link">إعدادات البوت</a>
+    <a href="settings.html" class="nav-link">إعدادات الموقع</a>
+    <a href="profile.html" class="nav-link">الملف الشخصي</a>
+    <a href="/logout" class="nav-link logout">تسجيل الخروج</a>
+</nav>
+</nav>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <header class="content-header">
+                <h1>إدارة الموظفين والرتب</h1>
+            </header>
+
+            <div class="card">
+                <h2>إضافة رتبة جديدة</h2>
+                <form id="roleForm">
+                    <div class="form-group">
+                        <label>معرف الرتبة في Discord</label>
+                        <input type="text" id="discordRoleId" required>
+                    </div>
+                    <div class="form-group">
+                        <label>اسم الرتبة</label>
+                        <input type="text" id="roleName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>الأولوية</label>
+                        <input type="number" id="rolePriority" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>الصلاحيات</label>
+                        <select id="rolePerms" multiple style="height:120px;">
+                            <option value="view_dashboard">عرض لوحة التحكم</option>
+                            <option value="manage_tickets">إدارة التذاكر</option>
+                            <option value="close_tickets">إغلاق التذاكر</option>
+                            <option value="manage_points">إدارة النقاط</option>
+                            <option value="view_logs">عرض السجلات</option>
+                            <option value="manage_roles">إدارة الرتب والصلاحيات</option>
+                            <option value="manage_settings">إدارة الإعدادات</option>
+                            <option value="full_access">صلاحيات كاملة</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn discord-btn">حفظ الرتبة</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>الرتب المضافة</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الاسم</th>
+                                <th>معرف Discord</th>
+                                <th>الصلاحيات</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rolesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        async function loadRoles() {
+            const data = await apiRequest('/staff/roles');
+            const tbody = document.getElementById('rolesTable');
+            tbody.innerHTML = '';
+            if (!data || !data.roles) return;
+            data.roles.forEach(role => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${role.name}</td>
+                    <td>${role.discordRoleId}</td>
+                    <td>${role.permissions.join(', ')}</td>
+                    <td><button class="btn btn-sm btn-danger" onclick="deleteRole('${role.id}')">حذف</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function deleteRole(id) {
+            if (!confirm('تأكيد الحذف؟')) return;
+            await apiRequest(`/staff/roles/${id}`, 'DELETE');
+            loadRoles();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRoles();
+            document.getElementById('roleForm').addEventListener('submit', async e => {
+                e.preventDefault();
+                const selectedPerms = Array.from(document.getElementById('rolePerms').selectedOptions).map(o => o.value);
+                await apiRequest('/staff/roles', 'POST', {
+                    discordRoleId: document.getElementById('discordRoleId').value,
+                    name: document.getElementById('roleName').value,
+                    priority: parseInt(document.getElementById('rolePriority').value),
+                    permissions: selectedPerms
+                });
+                e.target.reset();
+                loadRoles();
+            });
+        });
+    </script>
+</body>
+</html>

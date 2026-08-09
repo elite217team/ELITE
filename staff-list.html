@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة أعضاء الإدارة والموظفين</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>إدارة التذاكر</h2>
+            </div>
+            <nav class="sidebar-nav">
+<nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link">لوحة التحكم</a>
+    <a href="statistics.html" class="nav-link">الإحصائيات والتقارير</a>
+    <a href="tickets.html" class="nav-link">التذاكر</a>
+    <a href="archive.html" class="nav-link">أرشيف التذاكر</a>
+    <a href="ticket-types.html" class="nav-link">أنواع التذاكر</a>
+    <a href="ticket-buttons.html" class="nav-link">أزرار التذاكر</a>
+    <a href="ticket-settings.html" class="nav-link">إعدادات التذاكر</a>
+    <a href="staff-list.html" class="nav-link">أعضاء الإدارة</a>
+    <a href="staff.html" class="nav-link">إدارة الرتب</a>
+    <a href="permissions.html" class="nav-link">إدارة الصلاحيات المتقدمة</a>
+    <a href="banned.html" class="nav-link">المحظورين والقائمة السوداء</a>
+    <a href="message-templates.html" class="nav-link">قوالب الرسائل</a>
+    <a href="points.html" class="nav-link">نظام النقاط</a>
+    <a href="logs.html" class="nav-link">سجلات النظام</a>
+    <a href="bot-settings.html" class="nav-link">إعدادات البوت</a>
+    <a href="settings.html" class="nav-link">إعدادات الموقع</a>
+    <a href="profile.html" class="nav-link">الملف الشخصي</a>
+    <a href="/logout" class="nav-link logout">تسجيل الخروج</a>
+</nav>
+</nav>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <header class="content-header">
+                <h1>قائمة أعضاء الإدارة والموظفين</h1>
+                <div class="filters">
+                    <select id="roleFilter">
+                        <option value="all">جميع الرتب</option>
+                    </select>
+                    <input type="text" id="searchMember" placeholder="بحث بالاسم أو المعرف...">
+                </div>
+            </header>
+
+            <div id="staffContainer">
+                <!-- سيتم عرض الموظفين هنا مرتبين حسب الرتبة -->
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        let allStaff = [];
+        let rolesList = [];
+
+        async function loadData() {
+            const [staffRes, rolesRes] = await Promise.all([
+                apiRequest('/staff/list'),
+                apiRequest('/staff/roles')
+            ]);
+            
+            allStaff = staffRes?.staff || [];
+            rolesList = rolesRes?.roles || [];
+            
+            fillRoleFilter();
+            renderStaff();
+        }
+
+        function fillRoleFilter() {
+            const select = document.getElementById('roleFilter');
+            rolesList.sort((a, b) => b.priority - a.priority).forEach(role => {
+                const opt = document.createElement('option');
+                opt.value = role.id;
+                opt.textContent = role.name;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderStaff() {
+            const filterRole = document.getElementById('roleFilter').value;
+            const search = document.getElementById('searchMember').value.toLowerCase();
+            const container = document.getElementById('staffContainer');
+            container.innerHTML = '';
+
+            // تجميع الموظفين حسب الرتبة وترتيبهم
+            let grouped = {};
+            let filtered = allStaff;
+
+            if (filterRole !== 'all') {
+                filtered = filtered.filter(s => s.roleId === filterRole);
+            }
+            if (search) {
+                filtered = filtered.filter(s => 
+                    (s.username && s.username.toLowerCase().includes(search)) ||
+                    (s.discordId && s.discordId.includes(search)) ||
+                    (s.discordTag && s.discordTag.toLowerCase().includes(search))
+                );
+            }
+
+            // ترتيب حسب أولوية الرتبة
+            filtered.forEach(member => {
+                const role = rolesList.find(r => r.id === member.roleId);
+                const roleName = role ? role.name : 'بدون رتبة';
+                const priority = role ? role.priority : 0;
+                if (!grouped[roleName]) {
+                    grouped[roleName] = { priority, members: [] };
+                }
+                grouped[roleName].members.push(member);
+            });
+
+            // عرض كل مجموعة رتبة
+            Object.keys(grouped).sort((a, b) => grouped[b].priority - grouped[a].priority).forEach(roleName => {
+                const group = grouped[roleName];
+                const roleInfo = rolesList.find(r => r.name === roleName);
+                const roleBadge = roleInfo?.isAdmin ? 
+                    '<span class="badge open">مدير</span>' : 
+                    '<span class="badge claimed">موظف</span>';
+
+                const section = document.createElement('div');
+                section.className = 'card';
+                section.innerHTML = `
+                    <h2 style="display:flex;align-items:center;gap:10px;">
+                        ${roleName}
+                        ${roleBadge}
+                        <span style="font-size:13px;color:var(--text-muted);margin-right:auto;">(${group.members.length}) عضو</span>
+                    </h2>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>الاسم</th>
+                                    <th>معرف الحساب</th>
+                                    <th>اسم المستخدم</th>
+                                    <th>النقاط</th>
+                                    <th>التذاكر</th>
+                                    <th>تاريخ الانضمام</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${group.members.map(m => `
+                                    <tr>
+                                        <td>
+                                            <div style="display:flex;align-items:center;gap:10px;">
+                                                <img src="${m.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" 
+                                                     style="width:36px;height:36px;border-radius:50%;border:2px solid var(--primary);" alt="">
+                                                <div>
+                                                    <div style="font-weight:600;">${m.username || 'غير معروف'}</div>
+                                                    <div style="font-size:12px;color:var(--text-muted);">${m.discordTag || ''}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="direction:ltr;text-align:left; font-family:monospace; font-size:13px;">${m.discordId}</td>
+                                        <td>@${m.discordUsername || m.username}</td>
+                                        <td><strong style="color:var(--warning);">${m.totalPoints || 0}</strong> ⭐</td>
+                                        <td>${m.claimedTickets || 0} / ${m.closedTickets || 0}</td>
+                                        <td>${new Date(m.joinDate || m.createdAt).toLocaleDateString('ar-SA')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                container.appendChild(section);
+            });
+
+            if (Object.keys(grouped).length === 0) {
+                container.innerHTML = `
+                    <div class="card" style="text-align:center;padding:40px;color:var(--text-muted);">
+                        لا يوجد أعضاء مطابقين للبحث
+                    </div>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            document.getElementById('roleFilter').addEventListener('change', renderStaff);
+            document.getElementById('searchMember').addEventListener('input', renderStaff);
+        });
+    </script>
+</body>
+</html>

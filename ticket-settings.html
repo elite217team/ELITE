@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إعدادات التذاكر الافتراضية</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>إدارة التذاكر</h2>
+            </div>
+            <nav class="sidebar-nav">
+<nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link">لوحة التحكم</a>
+    <a href="statistics.html" class="nav-link">الإحصائيات والتقارير</a>
+    <a href="tickets.html" class="nav-link">التذاكر</a>
+    <a href="archive.html" class="nav-link">أرشيف التذاكر</a>
+    <a href="ticket-types.html" class="nav-link">أنواع التذاكر</a>
+    <a href="ticket-buttons.html" class="nav-link">أزرار التذاكر</a>
+    <a href="ticket-settings.html" class="nav-link">إعدادات التذاكر</a>
+    <a href="staff-list.html" class="nav-link">أعضاء الإدارة</a>
+    <a href="staff.html" class="nav-link">إدارة الرتب</a>
+    <a href="permissions.html" class="nav-link">إدارة الصلاحيات المتقدمة</a>
+    <a href="banned.html" class="nav-link">المحظورين والقائمة السوداء</a>
+    <a href="message-templates.html" class="nav-link">قوالب الرسائل</a>
+    <a href="points.html" class="nav-link">نظام النقاط</a>
+    <a href="logs.html" class="nav-link">سجلات النظام</a>
+    <a href="bot-settings.html" class="nav-link">إعدادات البوت</a>
+    <a href="settings.html" class="nav-link">إعدادات الموقع</a>
+    <a href="profile.html" class="nav-link">الملف الشخصي</a>
+    <a href="/logout" class="nav-link logout">تسجيل الخروج</a>
+</nav>
+</nav>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <header class="content-header">
+                <h1>إعدادات التذاكر الافتراضية</h1>
+            </header>
+
+            <div class="card">
+                <h2>🔒 قيود فتح التذاكر</h2>
+                <form id="ticketSettingsForm">
+                    <div class="form-group">
+                        <label>الحد الأقصى للتذاكر المفتوحة لكل شخص</label>
+                        <input type="number" id="maxPerUser" min="1" max="20" value="3">
+                        <small style="color:var(--text-muted);">أقصى عدد تذاكر يمكن أن تكون مفتوحة في نفس الوقت لنفس الشخص</small>
+                    </div>
+                    <div class="form-group">
+                        <label>إغلاق تلقائي بعد انتهاء النشاط (بالساعات)</label>
+                        <input type="number" id="autoCloseHours" min="0" max="720" value="0">
+                        <small style="color:var(--text-muted);">0 = تعطيل الإغلاق التلقائي. مثال: 24 = يغلق تلقائياً بعد يوم من عدم وجود رد</small>
+                    </div>
+                    <div class="form-group">
+                        <label>إرسال تنبيه قبل الإغلاق التلقائي (بالساعات)</label>
+                        <input type="number" id="warnBeforeClose" min="0" max="48" value="2">
+                        <small style="color:var(--text-muted);">كم ساعة قبل الإغلاق يتم تنبيه صاحب التذكرة والموظف؟ 0 = تعطيل التنبيه</small>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>🚧 خيارات التحكم بالتذاكر</h2>
+                <form>
+                    <div class="form-group">
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                            <input type="checkbox" id="ticketOpenEnabled" checked>
+                            <span>تفعيل فتح التذاكر</span>
+                        </label>
+                        <small style="color:var(--text-muted);">عند التعطيل لا يمكن لأحد فتح تذاكر جديدة مع عرض رسالة توضيحية</small>
+                    </div>
+                    <div class="form-group">
+                        <label>رسالة التعطيل</label>
+                        <textarea id="disabledMessage" rows="2" placeholder="عذراً، فتح التذاكر معطل حالياً..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                            <input type="checkbox" id="requireClaimToReply">
+                            <span>منع المراسلة حتى يتم استلام التذكرة من موظف</span>
+                        </label>
+                        <small style="color:var(--text-muted);">لن يتمكن صاحب التذكرة من إرسال رسائل حتى يستلمها موظف</small>
+                    </div>
+                    <div class="form-group">
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                            <input type="checkbox" id="allowUserClose">
+                            <span>السماح لصاحب التذكرة بإغلاق تذكرته بنفسه</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>إغلاق التذكرة عند كتابة كلمة معينة</label>
+                        <input type="text" id="closeKeyword" value="إغلاق|انهيت|شكرا" placeholder="افصل بين الكلمات برمز |">
+                        <small style="color:var(--text-muted);">عند كتابة صاحب التذكرة إحدى هذه الكلمات تُغلق تذكرته تلقائياً</small>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>📝 رسائل آلية</h2>
+                <form>
+                    <div class="form-group">
+                        <label>رسالة عند فتح التذكرة بنجاح</label>
+                        <textarea id="msgOpened" rows="2">✅ تم فتح تذكرتك بنجاح! رقم التذكرة: #{ticket_id}، سيتم التواصل معك قريباً.</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>رسالة عند وصول الحد الأقصى</label>
+                        <textarea id="msgMaxReached" rows="2">⚠️ لا يمكنك فتح تذكرة جديدة! لديك تذاكر مفتوحة حالياً، يرجى انتظار إغلاقها أولاً.</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>رسالة عند استلام التذكرة من موظف</label>
+                        <textarea id="msgClaimed" rows="2">✅ تم استلام تذكرتك من قبل الموظف {staff}، وسيساعدك قريباً.</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>رسالة تنبيه قبل الإغلاق</label>
+                        <textarea id="msgWarning" rows="2">⏰ تنبيه: لم يتم إضافة رد لفترة طويلة، ستُغلق التذكرة تلقائياً بعد {hours} ساعة.</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>رسالة عند الإغلاق التلقائي</label>
+                        <textarea id="msgAutoClosed" rows="2">🔒 تم إغلاق التذكرة تلقائياً لعدم وجود نشاط لفترة طويلة.</textarea>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card" style="text-align:center;">
+                <button class="btn discord-btn" onclick="saveSettings()">💾 حفظ جميع الإعدادات</button>
+            </div>
+
+            <div class="footer-credits">
+                جميع الحقوق محفوظة © <span>zo19m</span>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        async function loadSettings() {
+            const data = await apiRequest('/ticket-settings/get');
+            if (!data) return;
+
+            document.getElementById('maxPerUser').value = data.maxPerUser || 3;
+            document.getElementById('autoCloseHours').value = data.autoCloseHours || 0;
+            document.getElementById('warnBeforeClose').value = data.warnBeforeClose || 2;
+            document.getElementById('ticketOpenEnabled').checked = data.ticketOpenEnabled !== false;
+            document.getElementById('disabledMessage').value = data.disabledMessage || '';
+            document.getElementById('requireClaimToReply').checked = data.requireClaimToReply || false;
+            document.getElementById('allowUserClose').checked = data.allowUserClose !== false;
+            document.getElementById('closeKeyword').value = data.closeKeyword || '';
+            document.getElementById('msgOpened').value = data.msgOpened || '';
+            document.getElementById('msgMaxReached').value = data.msgMaxReached || '';
+            document.getElementById('msgClaimed').value = data.msgClaimed || '';
+            document.getElementById('msgWarning').value = data.msgWarning || '';
+            document.getElementById('msgAutoClosed').value = data.msgAutoClosed || '';
+        }
+
+        async function saveSettings() {
+            const payload = {
+                maxPerUser: parseInt(document.getElementById('maxPerUser').value),
+                autoCloseHours: parseInt(document.getElementById('autoCloseHours').value),
+                warnBeforeClose: parseInt(document.getElementById('warnBeforeClose').value),
+                ticketOpenEnabled: document.getElementById('ticketOpenEnabled').checked,
+                disabledMessage: document.getElementById('disabledMessage').value.trim(),
+                requireClaimToReply: document.getElementById('requireClaimToReply').checked,
+                allowUserClose: document.getElementById('allowUserClose').checked,
+                closeKeyword: document.getElementById('closeKeyword').value.trim(),
+                msgOpened: document.getElementById('msgOpened').value.trim(),
+                msgMaxReached: document.getElementById('msgMaxReached').value.trim(),
+                msgClaimed: document.getElementById('msgClaimed').value.trim(),
+                msgWarning: document.getElementById('msgWarning').value.trim(),
+                msgAutoClosed: document.getElementById('msgAutoClosed').value.trim()
+            };
+
+            await apiRequest('/ticket-settings/save', 'POST', payload);
+            alert('✅ تم حفظ إعدادات التذاكر بنجاح!');
+        }
+
+        document.addEventListener('DOMContentLoaded', loadSettings);
+    </script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>النقاط</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>إدارة التذاكر</h2>
+            </div>
+            <nav class="sidebar-nav">
+ <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link">لوحة التحكم</a>
+    <a href="statistics.html" class="nav-link">الإحصائيات والتقارير</a>
+    <a href="tickets.html" class="nav-link">التذاكر</a>
+    <a href="archive.html" class="nav-link">أرشيف التذاكر</a>
+    <a href="ticket-types.html" class="nav-link">أنواع التذاكر</a>
+    <a href="ticket-buttons.html" class="nav-link">أزرار التذاكر</a>
+    <a href="ticket-settings.html" class="nav-link">إعدادات التذاكر</a>
+    <a href="staff-list.html" class="nav-link">أعضاء الإدارة</a>
+    <a href="staff.html" class="nav-link">إدارة الرتب</a>
+    <a href="permissions.html" class="nav-link">إدارة الصلاحيات المتقدمة</a>
+    <a href="banned.html" class="nav-link">المحظورين والقائمة السوداء</a>
+    <a href="message-templates.html" class="nav-link">قوالب الرسائل</a>
+    <a href="points.html" class="nav-link">نظام النقاط</a>
+    <a href="logs.html" class="nav-link">سجلات النظام</a>
+    <a href="bot-settings.html" class="nav-link">إعدادات البوت</a>
+    <a href="settings.html" class="nav-link">إعدادات الموقع</a>
+    <a href="profile.html" class="nav-link">الملف الشخصي</a>
+    <a href="/logout" class="nav-link logout">تسجيل الخروج</a>
+</nav>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <header class="content-header">
+                <h1>نظام النقاط</h1>
+            </header>
+
+            <div class="card">
+                <h2>إضافة نقاط لموظف</h2>
+                <form id="pointsForm">
+                    <div class="form-group">
+                        <label>معرف حساب الموظف في Discord</label>
+                        <input type="text" id="userDiscordId" required>
+                    </div>
+                    <div class="form-group">
+                        <label>عدد النقاط</label>
+                        <input type="number" id="pointsAmount" required>
+                    </div>
+                    <div class="form-group">
+                        <label>السبب</label>
+                        <input type="text" id="pointsReason" required>
+                    </div>
+                    <button type="submit" class="btn discord-btn">منح النقاط</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>سجل النقاط</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الموظف</th>
+                                <th>النقاط</th>
+                                <th>السبب</th>
+                                <th>التاريخ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pointsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        async function loadPoints() {
+            const data = await apiRequest('/points/list');
+            const tbody = document.getElementById('pointsTable');
+            tbody.innerHTML = '';
+            if (!data || !data.records) return;
+            data.records.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.userName || row.userDiscordId}</td>
+                    <td>${row.amount}</td>
+                    <td>${row.reason}</td>
+                    <td>${new Date(row.createdAt).toLocaleDateString('ar-SA')}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPoints();
+            document.getElementById('pointsForm').addEventListener('submit', async e => {
+                e.preventDefault();
+                await apiRequest('/points/grant', 'POST', {
+                    userDiscordId: document.getElementById('userDiscordId').value,
+                    amount: parseInt(document.getElementById('pointsAmount').value),
+                    reason: document.getElementById('pointsReason').value
+                });
+                e.target.reset();
+                loadPoints();
+            });
+        });
+    </script>
+</body>
+</html>

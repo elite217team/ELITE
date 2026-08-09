@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أرشيف التذاكر</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>إدارة التذاكر</h2>
+            </div>
+            <nav class="sidebar-nav">
+<nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link">لوحة التحكم</a>
+    <a href="statistics.html" class="nav-link">الإحصائيات والتقارير</a>
+    <a href="tickets.html" class="nav-link">التذاكر</a>
+    <a href="archive.html" class="nav-link">أرشيف التذاكر</a>
+    <a href="ticket-types.html" class="nav-link">أنواع التذاكر</a>
+    <a href="ticket-buttons.html" class="nav-link">أزرار التذاكر</a>
+    <a href="ticket-settings.html" class="nav-link">إعدادات التذاكر</a>
+    <a href="staff-list.html" class="nav-link">أعضاء الإدارة</a>
+    <a href="staff.html" class="nav-link">إدارة الرتب</a>
+    <a href="permissions.html" class="nav-link">إدارة الصلاحيات المتقدمة</a>
+    <a href="banned.html" class="nav-link">المحظورين والقائمة السوداء</a>
+    <a href="message-templates.html" class="nav-link">قوالب الرسائل</a>
+    <a href="points.html" class="nav-link">نظام النقاط</a>
+    <a href="logs.html" class="nav-link">سجلات النظام</a>
+    <a href="bot-settings.html" class="nav-link">إعدادات البوت</a>
+    <a href="settings.html" class="nav-link">إعدادات الموقع</a>
+    <a href="profile.html" class="nav-link">الملف الشخصي</a>
+    <a href="/logout" class="nav-link logout">تسجيل الخروج</a>
+</nav>
+</nav>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <header class="content-header">
+                <h1>أرشيف التذاكر المغلقة</h1>
+                <div class="filters">
+                    <select id="filterType">
+                        <option value="all">جميع الأنواع</option>
+                    </select>
+                    <select id="filterPeriod">
+                        <option value="7">آخر أسبوع</option>
+                        <option value="30" selected>آخر شهر</option>
+                        <option value="90">آخر 3 أشهر</option>
+                        <option value="180">آخر 6 أشهر</option>
+                        <option value="365">آخر سنة</option>
+                    </select>
+                    <input type="text" id="searchArchive" placeholder="بحث برقم التذكرة أو الاسم...">
+                </div>
+            </header>
+
+            <div class="card">
+                <div style="display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:150px; text-align:center; padding:15px; background:var(--bg-input); border-radius:10px;">
+                        <div style="font-size:26px; font-weight:700; color:var(--primary-light);" id="archivedCount">0</div>
+                        <div style="font-size:13px; color:var(--text-muted);">تذكرة مؤرشفة</div>
+                    </div>
+                    <div style="flex:1; min-width:150px; text-align:center; padding:15px; background:var(--bg-input); border-radius:10px;">
+                        <div style="font-size:26px; font-weight:700; color:var(--success);" id="resolvedCount">0</div>
+                        <div style="font-size:13px; color:var(--text-muted);">مغلقة بنجاح</div>
+                    </div>
+                    <div style="flex:1; min-width:150px; text-align:center; padding:15px; background:var(--bg-input); border-radius:10px;">
+                        <div style="font-size:26px; font-weight:700; color:var(--warning);" id="avgCloseTime">-</div>
+                        <div style="font-size:13px; color:var(--text-muted);">متوسط وقت الإغلاق</div>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>رقم التذكرة</th>
+                                <th>النوع</th>
+                                <th>صاحب التذكرة</th>
+                                <th>الموظف المسؤول</th>
+                                <th>تاريخ الفتح</th>
+                                <th>تاريخ الإغلاق</th>
+                                <th>مدة المعالجة</th>
+                                <th>سبب الإغلاق</th>
+                                <th>إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="archiveTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="footer-credits">
+                جميع الحقوق محفوظة © <span>zo19m</span>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        let allTickets = [];
+        let typesList = [];
+
+        async function loadData() {
+            const [ticketsRes, typesRes] = await Promise.all([
+                apiRequest('/archive/list'),
+                apiRequest('/ticket-types/list')
+            ]);
+            allTickets = ticketsRes?.tickets || [];
+            typesList = typesRes?.types || [];
+            
+            const typeSelect = document.getElementById('filterType');
+            typesList.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.name;
+                typeSelect.appendChild(opt);
+            });
+
+            updateStats();
+            renderTable();
+        }
+
+        function updateStats() {
+            const filtered = getFilteredTickets();
+            document.getElementById('archivedCount').textContent = filtered.length;
+            const success = filtered.filter(t => t.closeReason !== 'حذف' && t.closeReason !== 'حظر').length;
+            document.getElementById('resolvedCount').textContent = success;
+            
+            if (filtered.length > 0) {
+                let totalHours = 0;
+                filtered.forEach(t => {
+                    if (t.openedAt && t.closedAt) {
+                        totalHours += (new Date(t.closedAt) - new Date(t.openedAt)) / (1000 * 60 * 60);
+                    }
+                });
+                const avg = Math.round(totalHours / filtered.length);
+                document.getElementById('avgCloseTime').textContent = avg > 24 ? `${Math.round(avg/24)} يوم` : `${avg} ساعة`;
+            }
+        }
+
+        function getFilteredTickets() {
+            const period = parseInt(document.getElementById('filterPeriod').value);
+            const type = document.getElementById('filterType').value;
+            const search = document.getElementById('searchArchive').value.toLowerCase();
+            const cutoff = Date.now() - (period * 24 * 60 * 60 * 1000);
+
+            return allTickets.filter(t => {
+                const ticketDate = new Date(t.closedAt).getTime();
+                if (ticketDate < cutoff) return false;
+                if (type !== 'all' && t.typeId !== type) return false;
+                if (search) {
+                    return (
+                        (t.ticketNumber && t.ticketNumber.toString().includes(search)) ||
+                        (t.userName && t.userName.toLowerCase().includes(search)) ||
+                        (t.subject && t.subject.toLowerCase().includes(search))
+                    );
+                }
+                return true;
+            });
+        }
+
+        function renderTable() {
+            const tickets = getFilteredTickets();
+            const tbody = document.getElementById('archiveTable');
+            tbody.innerHTML = '';
+
+            if (tickets.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align:center; padding:40px; color:var(--text-muted);">
+                            لا توجد تذاكر مؤرشفة ضمن الفترة المحددة
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tickets.forEach(t => {
+                const typeInfo = typesList.find(ty => ty.id === t.typeId);
+                const opened = new Date(t.openedAt);
+                const closed = new Date(t.closedAt);
+                const durationMs = closed - opened;
+                const days = Math.floor(durationMs / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((durationMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const durationText = days > 0 ? `${days} يوم ${hours} ساعة` : `${hours} ساعة`;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight:600; color:var(--primary-light);">#${t.ticketNumber || t.id?.substring(0, 6)}</td>
+                    <td>${typeInfo?.name || 'غير محدد'}</td>
+                    <td>${t.userName || t.userDiscordId || 'غير معروف'}</td>
+                    <td>${t.staffName || t.claimedBy ? '(مستلم)' : '-'}</td>
+                    <td>${opened.toLocaleDateString('ar-SA')}</td>
+                    <td>${closed.toLocaleDateString('ar-SA')}</td>
+                    <td>${durationText}</td>
+                    <td style="font-size:13px; color:var(--text-muted);">${t.closeReason || 'مغلق بنجاح'}</td>
+                    <td><button class="btn btn-sm btn-primary" onclick="viewTicket('${t.id}')">عرض</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function viewTicket(ticketId) {
+            window.open(`ticket-view.html?id=${ticketId}`, '_blank');
+        }
+
+        document.addEventListener('DOMContentLoaded', loadData);
+        ['filterPeriod', 'filterType', 'searchArchive'].forEach(id => {
+            document.getElementById(id).addEventListener('change', renderTable);
+            document.getElementById(id).addEventListener('input', renderTable);
+        });
+    </script>
+</body>
+</html>

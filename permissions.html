@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الصلاحيات المتقدمة</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>إدارة التذاكر</h2>
+            </div>
+            <nav class="sidebar-nav">
+<nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link">لوحة التحكم</a>
+    <a href="statistics.html" class="nav-link">الإحصائيات والتقارير</a>
+    <a href="tickets.html" class="nav-link">التذاكر</a>
+    <a href="archive.html" class="nav-link">أرشيف التذاكر</a>
+    <a href="ticket-types.html" class="nav-link">أنواع التذاكر</a>
+    <a href="ticket-buttons.html" class="nav-link">أزرار التذاكر</a>
+    <a href="ticket-settings.html" class="nav-link">إعدادات التذاكر</a>
+    <a href="staff-list.html" class="nav-link">أعضاء الإدارة</a>
+    <a href="staff.html" class="nav-link">إدارة الرتب</a>
+    <a href="permissions.html" class="nav-link">إدارة الصلاحيات المتقدمة</a>
+    <a href="banned.html" class="nav-link">المحظورين والقائمة السوداء</a>
+    <a href="message-templates.html" class="nav-link">قوالب الرسائل</a>
+    <a href="points.html" class="nav-link">نظام النقاط</a>
+    <a href="logs.html" class="nav-link">سجلات النظام</a>
+    <a href="bot-settings.html" class="nav-link">إعدادات البوت</a>
+    <a href="settings.html" class="nav-link">إعدادات الموقع</a>
+    <a href="profile.html" class="nav-link">الملف الشخصي</a>
+    <a href="/logout" class="nav-link logout">تسجيل الخروج</a>
+</nav>
+</nav>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <header class="content-header">
+                <h1>إدارة الصلاحيات المتقدمة</h1>
+                <div class="filters">
+                    <select id="roleSelect">
+                        <option value="" selected>اختر رتبة لتعديل صلاحياتها</option>
+                    </select>
+                </div>
+            </header>
+
+            <div class="card" id="permCard" style="display:none;">
+                <h2 id="roleNameHeader">صلاحيات الرتبة</h2>
+                <form id="permForm">
+                    <input type="hidden" id="permRoleId">
+                    
+                    <h3 style="margin:20px 0 10px; color:var(--primary-light);">التذاكر</h3>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:12px;">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="perm-checkbox" data-key="viewTickets"> عرض جميع التذاكر
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="perm-checkbox" data-key="claimTickets"> استلام التذاكر
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="perm-checkbox" data-key="replyTickets"> الرد على التذاكر المسلمة
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="perm-checkbox" data-key="closeTickets"> إغلاق التذاكر
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="perm-checkbox" data-key="reopenTickets"> إعادة فتح التذاكر المغلقة
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="perm-checkbox" data-key="deleteTickets"> حذف التذاكر نهائياً
+                        </label>
+                    </div>
+
+                    <h3 style="margin:20px 0 10px; color:var(--primary-light);">الإدارة والموظفين</h3>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:12px;">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="perm-checkbox" data-key="viewStaff"> عرض قائمة الموظفين
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="perm-checkbox" data-key="manageRoles"> إضافة وتعديل الرتب والصلاحيات
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="perm-checkbox" data-key="givePoints"> منح وسحب النقاط
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="perm-checkbox" data-key="viewLogs"> عرض سجلات النظام
+                        </label>
+                    </div>
+
+                    <h3 style="margin:20px 0 10px; color:var(--primary-light);">الإعدادات والتحكم</h3>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:12px;">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="perm-checkbox" data-key="manageBanned"> إدارة المحظورين والقائمة السوداء
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="perm-checkbox" data-key="manageTemplates"> إدارة قوالب الرسائل
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="perm-checkbox" data-key="manageTicketTypes"> إدارة أنواع التذاكر
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="perm-checkbox" data-key="changeSettings"> تعديل إعدادات النظام والبوت
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="perm-checkbox" data-key="restartBot"> إعادة تشغيل البوت
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" class="perm-checkbox" data-key="fullAccess"> وصول كامل وصلاحيات مدير عام
+                        </label>
+                    </div>
+
+                    <div style="margin-top:25px;">
+                        <button type="submit" class="btn discord-btn">💾 حفظ صلاحيات هذه الرتبة</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>ملخص صلاحيات جميع الرتب</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>اسم الرتبة</th>
+                                <th>استلام</th>
+                                <th>إغلاق</th>
+                                <th>نقاط</th>
+                                <th>إدارة رتب</th>
+                                <th>إعدادات</th>
+                                <th>وصول كامل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="permSummary"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="footer-credits">
+                جميع الحقوق محفوظة © <span>zo19m</span>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        let roles = [];
+        const allPermKeys = [
+            'viewTickets','claimTickets','replyTickets','closeTickets','reopenTickets','deleteTickets',
+            'viewStaff','manageRoles','givePoints','viewLogs',
+            'manageBanned','manageTemplates','manageTicketTypes','changeSettings','restartBot','fullAccess'
+        ];
+
+        async function loadRoles() {
+            const data = await apiRequest('/permissions/roles');
+            roles = data?.roles || [];
+            
+            const select = document.getElementById('roleSelect');
+            select.innerHTML = '<option value="" selected>اختر رتبة لتعديل صلاحياتها</option>';
+            roles.forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r.id;
+                opt.textContent = r.name;
+                select.appendChild(opt);
+            });
+            renderSummary();
+        }
+
+        function renderSummary() {
+            const tbody = document.getElementById('permSummary');
+            tbody.innerHTML = '';
+            roles.forEach(r => {
+                const p = r.permissions || {};
+                const yes = '<span style="color:var(--success);">✅</span>';
+                const no = '<span style="color:var(--danger);">❌</span>';
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${r.name}</strong></td>
+                        <td>${p.claimTickets ? yes : no}</td>
+                        <td>${p.closeTickets ? yes : no}</td>
+                        <td>${p.givePoints ? yes : no}</td>
+                        <td>${p.manageRoles ? yes : no}</td>
+                        <td>${p.changeSettings ? yes : no}</td>
+                        <td>${p.fullAccess ? yes : no}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function loadRolePermissions(roleId) {
+            if (!roleId) {
+                document.getElementById('permCard').style.display = 'none';
+                return;
+            }
+            const role = roles.find(r => r.id === roleId);
+            if (!role) return;
+
+            document.getElementById('permCard').style.display = 'block';
+            document.getElementById('roleNameHeader').textContent = `صلاحيات رتبة: ${role.name}`;
+            document.getElementById('permRoleId').value = roleId;
+            
+            const perms = role.permissions || {};
+            allPermKeys.forEach(key => {
+                const el = document.querySelector(`.perm-checkbox[data-key="${key}"]`);
+                if (el) el.checked = perms[key] === true;
+            });
+        }
+
+        async function savePermissions(e) {
+            e.preventDefault();
+            const roleId = document.getElementById('permRoleId').value;
+            const payload = { roleId, permissions: {} };
+            allPermKeys.forEach(key => {
+                const el = document.querySelector(`.perm-checkbox[data-key="${key}"]`);
+                payload.permissions[key] = el ? el.checked : false;
+            });
+
+            await apiRequest('/permissions/save', 'POST', payload);
+            alert('✅ تم حفظ صلاحيات الرتبة بنجاح!');
+            loadRoles();
+        }
+
+        document.addEventListener('DOMContentLoaded', loadRoles);
+        document.getElementById('roleSelect').addEventListener('change', e => loadRolePermissions(e.target.value));
+        document.getElementById('permForm').addEventListener('submit', savePermissions);
+    </script>
+</body>
+</html>

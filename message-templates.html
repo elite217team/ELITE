@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قوالب الرسائل الجاهزة</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>إدارة التذاكر</h2>
+            </div>
+            <nav class="sidebar-nav">
+<nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link">لوحة التحكم</a>
+    <a href="statistics.html" class="nav-link">الإحصائيات والتقارير</a>
+    <a href="tickets.html" class="nav-link">التذاكر</a>
+    <a href="archive.html" class="nav-link">أرشيف التذاكر</a>
+    <a href="ticket-types.html" class="nav-link">أنواع التذاكر</a>
+    <a href="ticket-buttons.html" class="nav-link">أزرار التذاكر</a>
+    <a href="ticket-settings.html" class="nav-link">إعدادات التذاكر</a>
+    <a href="staff-list.html" class="nav-link">أعضاء الإدارة</a>
+    <a href="staff.html" class="nav-link">إدارة الرتب</a>
+    <a href="permissions.html" class="nav-link">إدارة الصلاحيات المتقدمة</a>
+    <a href="banned.html" class="nav-link">المحظورين والقائمة السوداء</a>
+    <a href="message-templates.html" class="nav-link">قوالب الرسائل</a>
+    <a href="points.html" class="nav-link">نظام النقاط</a>
+    <a href="logs.html" class="nav-link">سجلات النظام</a>
+    <a href="bot-settings.html" class="nav-link">إعدادات البوت</a>
+    <a href="settings.html" class="nav-link">إعدادات الموقع</a>
+    <a href="profile.html" class="nav-link">الملف الشخصي</a>
+    <a href="/logout" class="nav-link logout">تسجيل الخروج</a>
+</nav>
+</nav>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <header class="content-header">
+                <h1>قوالب الرسائل الجاهزة</h1>
+                <button class="btn btn-primary" onclick="showForm()">قالب جديد</button>
+            </header>
+
+            <div class="card" id="formCard" style="display:none;">
+                <h2 id="formTitle">إضافة قالب رسالة جديد</h2>
+                <form id="templateForm">
+                    <input type="hidden" id="templateId">
+                    <div class="form-group">
+                        <label>اسم القالب</label>
+                        <input type="text" id="templateName" required placeholder="مثال: ترحيب - إغلاق - تحذير">
+                    </div>
+                    <div class="form-group">
+                        <label>نوع الاستخدام</label>
+                        <select id="templateCategory">
+                            <option value="welcome">رسالة ترحيب عند فتح تذكرة</option>
+                            <option value="claim">رسالة عند استلام التذكرة</option>
+                            <option value="close">رسالة عند إغلاق التذكرة</option>
+                            <option value="reply">رد جاهز</option>
+                            <option value="warning">تنبيه أو تحذير</option>
+                            <option value="custom">رسالة مخصصة</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>محتوى الرسالة</label>
+                        <textarea id="templateContent" rows="5" required placeholder="اكتب نص الرسالة هنا...
+
+المتغيرات المتاحة:
+{user} - اسم المستخدم
+{ticket_id} - رقم التذكرة
+{staff} - اسم الموظف
+{reason} - السبب"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>لون الرسالة (اختياري)</label>
+                        <select id="templateColor">
+                            <option value="default">افتراضي</option>
+                            <option value="success">أخضر - نجاح</option>
+                            <option value="warning">ذهبي - تنبيه</option>
+                            <option value="danger">أحمر - خطأ/إغلاق</option>
+                            <option value="info">أزرق - معلومات</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button type="submit" class="btn discord-btn">حفظ القالب</button>
+                        <button type="button" class="btn btn-danger" onclick="hideForm()">إلغاء</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>القوالب المحفوظة</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>اسم القالب</th>
+                                <th>النوع</th>
+                                <th>معاينة النص</th>
+                                <th>اللون</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="templatesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="footer-credits">
+                جميع الحقوق محفوظة © <span>zo19m</span>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        let editingId = null;
+
+        function showForm(tpl = null) {
+            document.getElementById('formCard').style.display = 'block';
+            document.getElementById('formTitle').textContent = tpl ? 'تعديل القالب' : 'إضافة قالب جديد';
+            editingId = tpl ? tpl.id : null;
+            if (tpl) {
+                document.getElementById('templateId').value = tpl.id;
+                document.getElementById('templateName').value = tpl.name;
+                document.getElementById('templateCategory').value = tpl.category || 'custom';
+                document.getElementById('templateContent').value = tpl.content;
+                document.getElementById('templateColor').value = tpl.color || 'default';
+            } else {
+                document.getElementById('templateForm').reset();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function hideForm() {
+            document.getElementById('formCard').style.display = 'none';
+            editingId = null;
+        }
+
+        function getCategoryLabel(cat) {
+            const map = {
+                welcome: 'ترحيب',
+                claim: 'استلام',
+                close: 'إغلاق',
+                reply: 'رد جاهز',
+                warning: 'تنبيه',
+                custom: 'مخصص'
+            };
+            return map[cat] || cat;
+        }
+
+        function getColorLabel(col) {
+            const map = {
+                default: 'افتراضي',
+                success: '<span class="badge open">نجاح</span>',
+                warning: '<span class="badge claimed">تنبيه</span>',
+                danger: '<span class="badge closed">خطر</span>',
+                info: '<span class="badge" style="background:rgba(0,212,255,0.1);color:#00d4ff;">معلومات</span>'
+            };
+            return map[col] || 'افتراضي';
+        }
+
+        async function loadTemplates() {
+            const data = await apiRequest('/templates/list');
+            const tbody = document.getElementById('templatesTable');
+            tbody.innerHTML = '';
+            if (!data || !data.templates) return;
+            data.templates.forEach(tpl => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${tpl.name}</strong></td>
+                    <td>${getCategoryLabel(tpl.category)}</td>
+                    <td style="max-width:350px; font-size:13px; color:var(--text-muted);">
+                        ${tpl.content.length > 80 ? tpl.content.substring(0, 80) + '...' : tpl.content}
+                    </td>
+                    <td>${getColorLabel(tpl.color)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick='editTpl(${JSON.stringify(tpl).replace(/'/g,"\\'")})'>تعديل</button>
+                        <button class="btn btn-sm" style="background:var(--bg-hover);color:var(--text);" onclick="copyContent(\`${tpl.content.replace(/`/g, '\\`')}\`)">نسخ</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteTpl('${tpl.id}')">حذف</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function editTpl(tpl) {
+            showForm(tpl);
+        }
+
+        function copyContent(text) {
+            navigator.clipboard.writeText(text);
+            alert('تم نسخ محتوى الرسالة ✅');
+        }
+
+        async function deleteTpl(id) {
+            if (!confirm('تأكيد حذف هذا القالب؟')) return;
+            await apiRequest(`/templates/${id}`, 'DELETE');
+            loadTemplates();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTemplates();
+            document.getElementById('templateForm').addEventListener('submit', async e => {
+                e.preventDefault();
+                const payload = {
+                    name: document.getElementById('templateName').value,
+                    category: document.getElementById('templateCategory').value,
+                    content: document.getElementById('templateContent').value,
+                    color: document.getElementById('templateColor').value
+                };
+                if (editingId) {
+                    await apiRequest(`/templates/${editingId}`, 'PUT', payload);
+                } else {
+                    await apiRequest('/templates', 'POST', payload);
+                }
+                hideForm();
+                loadTemplates();
+                alert('تم حفظ القالب بنجاح ✅');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أزرار فتح التذاكر</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>إدارة التذاكر</h2>
+            </div>
+            <nav class="sidebar-nav">
+<nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link">لوحة التحكم</a>
+    <a href="statistics.html" class="nav-link">الإحصائيات والتقارير</a>
+    <a href="tickets.html" class="nav-link">التذاكر</a>
+    <a href="archive.html" class="nav-link">أرشيف التذاكر</a>
+    <a href="ticket-types.html" class="nav-link">أنواع التذاكر</a>
+    <a href="ticket-buttons.html" class="nav-link">أزرار التذاكر</a>
+    <a href="ticket-settings.html" class="nav-link">إعدادات التذاكر</a>
+    <a href="staff-list.html" class="nav-link">أعضاء الإدارة</a>
+    <a href="staff.html" class="nav-link">إدارة الرتب</a>
+    <a href="permissions.html" class="nav-link">إدارة الصلاحيات المتقدمة</a>
+    <a href="banned.html" class="nav-link">المحظورين والقائمة السوداء</a>
+    <a href="message-templates.html" class="nav-link">قوالب الرسائل</a>
+    <a href="points.html" class="nav-link">نظام النقاط</a>
+    <a href="logs.html" class="nav-link">سجلات النظام</a>
+    <a href="bot-settings.html" class="nav-link">إعدادات البوت</a>
+    <a href="settings.html" class="nav-link">إعدادات الموقع</a>
+    <a href="profile.html" class="nav-link">الملف الشخصي</a>
+    <a href="/logout" class="nav-link logout">تسجيل الخروج</a>
+</nav>
+</nav>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <header class="content-header">
+                <h1>أزرار ورسائل فتح التذاكر</h1>
+            </header>
+
+            <div class="card">
+                <h2>إنشاء رسالة فتح تذاكر جديدة</h2>
+                <form id="buttonForm">
+                    <div class="form-group">
+                        <label>عنوان الرسالة</label>
+                        <input type="text" id="msgTitle" placeholder="مثال: فتح تذكرة دعم فني">
+                    </div>
+                    <div class="form-group">
+                        <label>محتوى الرسالة</label>
+                        <textarea id="msgContent" rows="4" placeholder="اضغط على الزر أدناه لفتح تذكرة..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>نوع التذكرة المرتبط</label>
+                        <select id="btnTicketType"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>نص الزر</label>
+                        <input type="text" id="btnLabel" value="فتح تذكرة">
+                    </div>
+                    <div class="form-group">
+                        <label>لون الزر</label>
+                        <select id="btnStyle">
+                            <option value="1" selected>أزرق</option>
+                            <option value="2">رمادي</option>
+                            <option value="3">أخضر</option>
+                            <option value="4">أحمر</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn discord-btn">إنشاء الرسالة والحصول على الأمر</button>
+                </form>
+            </div>
+
+            <div class="card" id="commandCard" style="display:none;">
+                <h2>الأمر الذي يجب إرساله في Discord</h2>
+                <div style="background:var(--darker);padding:15px;border-radius:6px;direction:ltr;text-align:left;font-family:monospace;word-break:break-all;" id="commandOutput"></div>
+                <button class="btn btn-primary" onclick="copyCommand()" style="margin-top:10px;">نسخ الأمر</button>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        let typesList = [];
+        async function loadTypes() {
+            const data = await apiRequest('/ticket-types/list');
+            const select = document.getElementById('btnTicketType');
+            select.innerHTML = '';
+            typesList = data?.types || [];
+            typesList.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.name;
+                select.appendChild(opt);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTypes();
+            document.getElementById('buttonForm').addEventListener('submit', e => {
+                e.preventDefault();
+                const typeId = document.getElementById('btnTicketType').value;
+                const title = encodeURIComponent(document.getElementById('msgTitle').value);
+                const content = encodeURIComponent(document.getElementById('msgContent').value);
+                const label = encodeURIComponent(document.getElementById('btnLabel').value);
+                const style = document.getElementById('btnStyle').value;
+                const cmd = `/setup-button type:${typeId} title:"${title}" content:"${content}" label:"${label}" style:${style}`;
+                document.getElementById('commandOutput').textContent = cmd;
+                document.getElementById('commandCard').style.display = 'block';
+            });
+        });
+
+        function copyCommand() {
+            const text = document.getElementById('commandOutput').textContent;
+            navigator.clipboard.writeText(text);
+            alert('تم نسخ الأمر');
+        }
+    </script>
+</body>
+</html>

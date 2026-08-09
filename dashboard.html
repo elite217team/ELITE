@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>إدارة التذاكر</h2>
+            </div>
+            <nav class="sidebar-nav">
+<nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link">لوحة التحكم</a>
+    <a href="statistics.html" class="nav-link">الإحصائيات والتقارير</a>
+    <a href="tickets.html" class="nav-link">التذاكر</a>
+    <a href="archive.html" class="nav-link">أرشيف التذاكر</a>
+    <a href="ticket-types.html" class="nav-link">أنواع التذاكر</a>
+    <a href="ticket-buttons.html" class="nav-link">أزرار التذاكر</a>
+    <a href="ticket-settings.html" class="nav-link">إعدادات التذاكر</a>
+    <a href="staff-list.html" class="nav-link">أعضاء الإدارة</a>
+    <a href="staff.html" class="nav-link">إدارة الرتب</a>
+    <a href="permissions.html" class="nav-link">إدارة الصلاحيات المتقدمة</a>
+    <a href="banned.html" class="nav-link">المحظورين والقائمة السوداء</a>
+    <a href="message-templates.html" class="nav-link">قوالب الرسائل</a>
+    <a href="points.html" class="nav-link">نظام النقاط</a>
+    <a href="logs.html" class="nav-link">سجلات النظام</a>
+    <a href="bot-settings.html" class="nav-link">إعدادات البوت</a>
+    <a href="settings.html" class="nav-link">إعدادات الموقع</a>
+    <a href="profile.html" class="nav-link">الملف الشخصي</a>
+    <a href="/logout" class="nav-link logout">تسجيل الخروج</a>
+</nav>
+</nav>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <header class="content-header">
+                <h1>لوحة التحكم</h1>
+                <div class="user-info" id="userName"></div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>إجمالي التذاكر</h3>
+                    <p class="stat-value" id="totalTickets">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>التذاكر المفتوحة</h3>
+                    <p class="stat-value" id="openTickets">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>التذاكر المغلقة</h3>
+                    <p class="stat-value" id="closedTickets">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>الموظفين النشطين</h3>
+                    <p class="stat-value" id="activeStaff">0</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>آخر التذاكر</h2>
+                <div id="recentTickets"></div>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        async function loadDashboard() {
+            const data = await apiRequest('/dashboard/stats');
+            if (data) {
+                document.getElementById('totalTickets').textContent = data.totalTickets || 0;
+                document.getElementById('openTickets').textContent = data.openTickets || 0;
+                document.getElementById('closedTickets').textContent = data.closedTickets || 0;
+                document.getElementById('activeStaff').textContent = data.activeStaff || 0;
+            }
+        }
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+</html>
