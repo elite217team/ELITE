@@ -1,5 +1,5 @@
 // عنوان خادم الربط
-const API_URL = 'https://timeout-appeals.discloud.app/api/status'
+const API_URL = 'timeout-appeals.discloud.app/api'
 
 // دالة إرسال الطلبات للخادم
 async function apiRequest(endpoint, method = 'GET', body = null) {
