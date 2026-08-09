@@ -1,12 +1,12 @@
 // ─── إعدادات الربط ──────────────────────────────
 // ضع رابط بوتك هنا بعد ما ترفعه على Discloud
 // مثال: const API_BASE_URL = 'https://abc123.discloud.app/api';
-const API_BASE_URL = 'https://timeout-appeals.discloud.app/api';
+const API_BASE_URL = 'timeout-appeals.discloud.app/api';
 
 // ضع نفس كلمة السر التي كتبتها في ملف .env للبوت
-// مثال: const API_KEY = '--';
+// مثال: const API_KEY = 'P16yie33Q2llOpE-5bMAahtL2CmpK6Q-:Abc123!XyZ987@';
 const API_KEY = '
-eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjM5MDExMzE0MDQyNDI4NzQyNDQwMjEwMSIsImtleSI6IjhkZmFlODFhYTNhZGJmY2IxNjE1NmE3ODFlOWMifQ.NgiRax_rqNbR40hvieZw7XOI1e8zT6ool3p5pE62KRo-';
+eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjM5MDExMzE0MDQyNDI4NzQyNDQwMjEwMSIsImtleSI6IjhkZmFlODFhYTNhZGJmY2IxNjE1NmE3ODFlOWMifQ.NgiRax_rqNbR40hvieZw7XOI1e8zT6ool3p5pE62KRo';
 
 // ─── دوال الاتصال بالبوت ───────────────────────
 async function sendAPI(endpoint, method = 'GET', body = null) {
